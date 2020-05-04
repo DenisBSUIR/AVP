@@ -65,6 +65,29 @@ void cpu_filter(const unsigned char* img, unsigned char* result_img, const int w
 	}
 }
 
+void cpu_filter_lab6(const unsigned char* img, unsigned char* result_img, const int width, const int height) {
+	vector<vector<char>> pixel (3,vector<char>(9));
+	for (int i = 1; i < height - 1; i++) {
+		for (int j = 1; j < width - 1 ; j++) {
+			for (int color = 0; color < 3; color++) {
+				pixel[color][0] = img[(i - 1) * width * 3 + (j - 1) * 3 + color];
+				pixel[color][1] = img[(i - 1) * width * 3 + j * 3 + color];
+				pixel[color][2] = img[(i - 1) * width * 3 + (j + 1) * 3 + color];
+				pixel[color][3] = img[i * width * 3 + (j - 1) * 3 + color];
+				pixel[color][4] = img[i * width * 3 + j * 3 + color];
+				pixel[color][5] = img[i * width * 3 + (j + 1) * 3 + color];
+				pixel[color][6] = img[(i + 1) * width * 3 + (j - 1) * 3 + color];
+				pixel[color][7] = img[(i + 1) * width * 3 + j * 3 + color];
+				pixel[color][8] = img[(i + 1) * width * 3 + (j + 1)  * 3 + color];
+			}
+			for (int color = 0; color < 3; color++) {
+				auto min = min_element(pixel[color].begin(), pixel[color].end());
+				result_img[i * width * 3 + j * 3 + color] = *min;
+			}
+		}
+	}
+}
+
 unsigned char* remove_padding(const unsigned char* mod_img, const int width, const int height, const int mod_width){
 
 	unsigned char *result_img;
@@ -74,6 +97,20 @@ unsigned char* remove_padding(const unsigned char* mod_img, const int width, con
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			result_img[i * width + j] = mod_img[(i + 1) * mod_width + j + 1];
+		}
+	}
+	return result_img;
+}
+
+unsigned char* remove_padding_lab6(const unsigned char* mod_img, const int width, const int height, const int mod_width) {
+
+	unsigned char* result_img;
+
+	result_img = new unsigned char[width * height * 3];
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width * 3; j++) {
+			result_img[i * width * 3 + j] = mod_img[(i + 1) * mod_width * 3 + j + 3];
 		}
 	}
 	return result_img;
@@ -94,4 +131,17 @@ void show_matrix(const unsigned char* img, const int width, const int height) {
 		}
 		cout << endl;
 	}
+}
+
+unsigned char* prepare_img(const unsigned char* img, const unsigned int width, const int height, const int mod_width, const int mod_height) {
+	
+	unsigned char* mod_img = (unsigned char*)calloc(mod_width * mod_height * 3, sizeof(char));
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 3; j < width * 3 + 3; j++) {
+			mod_img[(i + 1) * mod_width * 3 + j] = img[i * width * 3 + (j - 3)];
+		}
+	}
+
+	return mod_img;
 }
